@@ -1,4 +1,0 @@
-https://www.kaggle.com/datasets/andrewmvd/medical-mnist?authuser=0
-https://www.tensorflow.org/tutorials/generative/autoencoder?authuser=0
-https://www.tensorflow.org/tutorials/generative/cvae?authuser=0
-https://medium.com/data-science/difference-between-autoencoder-ae-and-variational-autoencoder-vae-ed7be1c038f2?authuser=0
