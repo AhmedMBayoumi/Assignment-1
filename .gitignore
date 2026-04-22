@@ -1,0 +1,47 @@
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Jupyter
+.ipynb_checkpoints/
+notebooks/*_executed.ipynb
+
+# Dataset (large binary files — download separately)
+data/raw/*.zip
+data/raw/medical-mnist/
+
+# Trained models (large binary files)
+models/*.keras
+models/*.h5
+models/*.pb
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# TF logs
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Env files
+.env
+*.env
