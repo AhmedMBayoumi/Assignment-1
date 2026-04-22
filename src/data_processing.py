@@ -6,9 +6,43 @@ from typing import List, Tuple
 import tensorflow as tf
 
 
+KAGGLE_DATASET_ID: str = "andrewmvd/medical-mnist"
+
+
 IMAGE_SIZE: Tuple[int, int] = (64, 64)
 CHANNELS: int = 1
 CLASS_NAMES: List[str] = ["AbdomenCT", "BreastMRI", "ChestCT", "CXR", "Hand", "HeadCT"]
+
+
+def ensure_dataset(data_dir: str) -> str:
+    """Ensure the Medical MNIST dataset is available, downloading it if needed.
+
+    Checks whether ``data_dir`` already contains the expected class subdirectories.
+    If the data is missing, downloads the dataset via ``kagglehub`` and returns
+    the path provided by the download cache.  The original ``data_dir`` is
+    returned unchanged when the data is already present.
+
+    Args:
+        data_dir: Preferred local path to the Medical MNIST root directory.
+
+    Returns:
+        Path to the directory that contains the class subdirectories.
+    """
+    data_path = Path(data_dir)
+    already_present = data_path.exists() and any(
+        (data_path / cls).is_dir() for cls in CLASS_NAMES
+    )
+
+    if already_present:
+        print(f"Dataset found at {data_path}")
+        return str(data_path)
+
+    print(f"Dataset not found at {data_path}. Downloading via kagglehub...")
+    import kagglehub  # imported lazily so kagglehub is optional at import time
+
+    downloaded_path = kagglehub.dataset_download(KAGGLE_DATASET_ID)
+    print(f"Dataset downloaded to: {downloaded_path}")
+    return downloaded_path
 
 
 def process_path(file_path: str) -> Tuple[tf.Tensor, tf.Tensor]:
