@@ -1,14 +1,14 @@
 """Data processing utilities for Medical MNIST dataset."""
 
 from pathlib import Path
-from typing import Tuple
+from typing import List, Tuple
 
 import tensorflow as tf
 
 
 IMAGE_SIZE: Tuple[int, int] = (64, 64)
 CHANNELS: int = 1
-CLASS_NAMES = ["AbdomenCT", "BreastMRI", "ChestCT", "CXR", "Hand", "HeadCT"]
+CLASS_NAMES: List[str] = ["AbdomenCT", "BreastMRI", "ChestCT", "CXR", "Hand", "HeadCT"]
 
 
 def process_path(file_path: str) -> Tuple[tf.Tensor, tf.Tensor]:
@@ -43,9 +43,11 @@ def get_label_from_path(file_path: tf.Tensor) -> tf.Tensor:
     label_table = tf.lookup.StaticHashTable(
         tf.lookup.KeyValueTensorInitializer(
             keys=CLASS_NAMES,
-            values=list(range(len(CLASS_NAMES))),
+            values=tf.cast(list(range(len(CLASS_NAMES))), tf.int32),
         ),
-        default_value=0,
+        # -1 flags unknown directories so they can be filtered out rather than
+        # silently mislabeled as class 0 (AbdomenCT).
+        default_value=-1,
     )
     return label_table.lookup(label_str)
 
@@ -95,6 +97,7 @@ def get_labeled_dataset(
         return img, label
 
     ds = list_ds.map(_process_with_label, num_parallel_calls=tf.data.AUTOTUNE)
+    ds = ds.filter(lambda _img, lbl: lbl >= 0)
     ds = ds.batch(batch_size, drop_remainder=True)
     ds = ds.prefetch(tf.data.AUTOTUNE)
     return ds

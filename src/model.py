@@ -51,7 +51,7 @@ class Sampling(tf.keras.layers.Layer):
         z_mean, z_log_var = inputs
         batch = tf.shape(z_mean)[0]
         dim = tf.shape(z_mean)[1]
-        epsilon = tf.keras.backend.random_normal(shape=(batch, dim))
+        epsilon = tf.random.normal(shape=(batch, dim))
         return z_mean + tf.exp(0.5 * z_log_var) * epsilon
 
 
@@ -102,7 +102,11 @@ class VAE(tf.keras.Model):
 
     @property
     def metrics(self) -> List[tf.keras.metrics.Metric]:
-        """Return tracked loss metrics."""
+        """Return the list of tracked loss metrics for this model.
+
+        Returns:
+            List containing total_loss, reconstruction_loss, and kl_loss trackers.
+        """
         return [
             self.total_loss_tracker,
             self.reconstruction_loss_tracker,
@@ -160,3 +164,34 @@ class VAE(tf.keras.Model):
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
             "kl_loss": self.kl_loss_tracker.result(),
         }
+
+    def test_step(self, data: tf.Tensor) -> dict:
+        """Evaluate the model without updating weights.
+
+        Args:
+            data: Batch from tf.data, may be an (images, images) tuple.
+
+        Returns:
+            Dict with keys: loss, reconstruction_loss, kl_loss.
+        """
+        if isinstance(data, tuple):
+            data = data[0]
+
+        z_mean, z_log_var, z = self.encoder(data, training=False)
+        reconstruction = self.decoder(z, training=False)
+
+        reconstruction_loss = tf.reduce_mean(
+            tf.reduce_sum(
+                tf.keras.losses.binary_crossentropy(data, reconstruction),
+                axis=(1, 2),
+            )
+        )
+        kl_loss = -0.5 * (1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
+        kl_loss = tf.reduce_mean(tf.reduce_sum(kl_loss, axis=1))
+        total_loss = reconstruction_loss + kl_loss
+
+        self.total_loss_tracker.update_state(total_loss)
+        self.reconstruction_loss_tracker.update_state(reconstruction_loss)
+        self.kl_loss_tracker.update_state(kl_loss)
+
+        return {m.name: m.result() for m in self.metrics}

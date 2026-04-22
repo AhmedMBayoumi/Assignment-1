@@ -4,7 +4,13 @@ from pathlib import Path
 
 import tensorflow as tf
 
-from src.data_processing import get_dataset, get_labeled_dataset, process_path
+from src.data_processing import (
+    CLASS_NAMES,
+    get_dataset,
+    get_label_from_path,
+    get_labeled_dataset,
+    process_path,
+)
 
 IMAGE_SHAPE = (64, 64, 1)
 
@@ -57,6 +63,24 @@ def test_get_dataset_input_equals_target(tmp_path: Path) -> None:
     ds = get_dataset(str(tmp_path), batch_size=4)
     for images, targets in ds.take(1):
         assert tf.reduce_all(tf.equal(images, targets))
+
+
+def test_get_label_from_path_known_class(tmp_path: Path) -> None:
+    """get_label_from_path returns the correct index for a known class directory."""
+    img_path = tmp_path / "ChestCT" / "img.jpeg"
+    img_path.parent.mkdir()
+    _make_jpeg(img_path)
+    label = get_label_from_path(str(img_path))
+    assert int(label) == CLASS_NAMES.index("ChestCT")
+
+
+def test_get_label_from_path_unknown_class(tmp_path: Path) -> None:
+    """get_label_from_path returns -1 for an unrecognised directory name."""
+    img_path = tmp_path / "UnknownClass" / "img.jpeg"
+    img_path.parent.mkdir()
+    _make_jpeg(img_path)
+    label = get_label_from_path(str(img_path))
+    assert int(label) == -1
 
 
 def test_get_labeled_dataset_shape(tmp_path: Path) -> None:
