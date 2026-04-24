@@ -65,7 +65,15 @@ def run_training(
 
     out_path = Path(models_dir) / f"{model_type.lower()}_v1.keras"
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    model.save(str(out_path))
-    print(f"Model saved to {out_path}")
+    if model_type == "AE":
+        model.save(str(out_path))
+        print(f"Model saved to {out_path}")
+    else:
+        enc_path = out_path.with_name("vae_encoder_v1.keras")
+        dec_path = out_path.with_name("vae_decoder_v1.keras")
+        model.encoder.save(str(enc_path))
+        model.decoder.save(str(dec_path))
+        print(f"VAE encoder saved to {enc_path}")
+        print(f"VAE decoder saved to {dec_path}")
 
     return history, model

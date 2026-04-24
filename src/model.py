@@ -39,6 +39,9 @@ def build_ae() -> tf.keras.Model:
 class Sampling(tf.keras.layers.Layer):
     """Reparameterization trick layer: z = μ + σ·ε, ε ~ N(0, I)."""
 
+    def get_config(self) -> dict:
+        return super().get_config()
+
     def call(self, inputs: Tuple[tf.Tensor, tf.Tensor]) -> tf.Tensor:
         """Sample a latent vector from the Gaussian defined by (z_mean, z_log_var).
 

@@ -38,7 +38,7 @@ def ensure_dataset(data_dir: str) -> str:
         return str(data_path)
 
     print(f"Dataset not found at {data_path}. Downloading via kagglehub...")
-    import kagglehub  # imported lazily so kagglehub is optional at import time
+    import kagglehub 
 
     downloaded_path = kagglehub.dataset_download(KAGGLE_DATASET_ID)
     print(f"Dataset downloaded to: {downloaded_path}")
@@ -70,7 +70,6 @@ def get_label_from_path(file_path: tf.Tensor) -> tf.Tensor:
     Returns:
         Integer label tensor (0–5) corresponding to the class subdirectory.
     """
-    # Normalize Windows backslashes so splitting on "/" works on all platforms
     normalized = tf.strings.regex_replace(file_path, r"\\", "/")
     parts = tf.strings.split(normalized, "/")
     label_str = parts[-2]
@@ -79,8 +78,6 @@ def get_label_from_path(file_path: tf.Tensor) -> tf.Tensor:
             keys=CLASS_NAMES,
             values=tf.cast(list(range(len(CLASS_NAMES))), tf.int32),
         ),
-        # -1 flags unknown directories so they can be filtered out rather than
-        # silently mislabeled as class 0 (AbdomenCT).
         default_value=-1,
     )
     return label_table.lookup(label_str)
